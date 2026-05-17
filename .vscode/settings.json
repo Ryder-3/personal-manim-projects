@@ -1,6 +1,0 @@
-{
-  "python.defaultInterpreterPath": "${workspaceFolder}/manim-env/Scripts/python.exe",
-  "python.analysis.diagnosticSeverityOverrides": {
-    "reportWildcardImportFromLibrary": "none"
-  }
-}
