@@ -9,19 +9,14 @@ for _parent in Path(__file__).resolve().parents:
 
 from manimlib import *
 from mobjects import Table
-import csv
+import json
 
 
 class MainScene(Scene):
     def construct(self) -> None:
 
     #region TITLE SLIDE
-        datatable = []
-        with open(r"stats-final-project\iPhone vs Android Bias Survey.csv", mode='r') as file:
-            reader = csv.reader(file)
-            for row in reader:
-                datatable.append(row)
-            
+    
 
         #create apple logo
         apple_logo = SVGMobject(r"assets\svg\Apple_logo_black.svg")
@@ -124,20 +119,124 @@ class MainScene(Scene):
         test_text_2 = Text("Because of what I hear around school, all hypothosis\nwill be that there is more bias at NWS than in the survay.")
         test_text_3 = Text("Hypothosis (it's the same for all claims):")
         test_text_4 = Tex(r"H_{0}:\widehat{p}_{1}-\widehat{p}_{2}=0")
-        test_text_5 = Tex(r"H_{A}:\widehat{p}_{1}-\widehat{p}_{2}>0")
+        test_text_5 = Tex(r"H_{A}:\widehat{p}_{1}-\widehat{p}_{2}\ne 0")
         test_text_6 = Tex(r"\text{Where }\widehat{p}_{1} \text{ is the proportion from NWS and }\widehat{p}_{2}\text{ is the proportion from the survay.}")
         test_text_group.add(test_text_1, test_text_2, test_text_3, test_text_4, test_text_5, test_text_6)
         test_text_group.scale(0.5)
         test_text_group.align_to(claim_table,RIGHT)
 
         self.play(ShowCreation(test_text_group))
-
-
-
     #endregion
 
+    #region INTRO
+        intro_txt_1 = Text("For each of the hypothoses, we are comparing two sample proportions")
+        intro_txt_2 = Text("We are doing this because we don't know the truo proportion, all we know is what we found, and what the study found")
+        intro_txt_3 = Text("We will be testing to see if there is a significant difference between NWS and the findings of the study")
+        intro_txt_4 = Text("To do this, we will create a normal distribution around the diferece of the samples")
+        intro_txt_5 = Text("If a differece of 0 falls in our normal dist, then we can't know if there is a significant differece")
+        intro_txt_6 = Text("If 0 does not fall in our normal dist, then we know there's a significant difference")
+        intro_txt_7 = Text("To start, lets look at our data")
+    #endregion
 
     #region DATA
+        json_path = Path(__file__).parent / "survey_by_question.json"
+        with open(json_path, encoding="utf-8") as json_file:
+            data = json.load(json_file)
+        
+
+        # Show Each question, the survay responce, and our responce
+
+        #keep this on the bottom for this entire section
+        citation = Text("Source for outside data: https://allaboutcookies.org/apple-vs-android")
+
+        #q1 (to iphone users), do you think less of people who have Andriods
+        data_txt_1 = Text('The first question I asked iPhone users was "Do you judge people when they text you with green bubbles?"')
+        q1_data = data["Do you judge people when they text you with green bubles?"]
+
+        #get q1 data
+        q1_y = 0
+        q1_n = 0
+        q1_answers = 0
+
+        for answer in q1_data:
+            if answer == "Yes":
+                q1_y += 1
+                q1_answers += 1
+            elif answer == "No":
+                q1_n += 1
+                q1_answers += 1
+            
+
+        #convert answer num into %
+        q1_y = (q1_y/q1_answers) * 100
+        q1_n = (q1_n/q1_answers) * 100
+
+        #display        
+        q1_nws_bar_chart = BarChart([q1_y, q1_n], bar_names=["Yes", "No"])
+        q1_surv_bar_chart = BarChart([22, 78], bar_names=["Yes", "No"])
+        
+    
+        #q2 (to iphone users), which of the following have you done because someone you know has an android?
+        q2_data = data["Which of the following have you done because someone you know has an Android? (select all that apply)"]
+        q2_counts: dict[str, float] = {}
+        q2_answers = 0
+        for response in q2_data:
+            if not response.strip():
+                continue
+            q2_answers += 1
+            for choice in response.split(";"):
+                choice = choice.strip()
+                if choice:
+                    q2_counts[choice] = q2_counts.get(choice, 0) + 1
+
+        for choice in q2_counts:
+            q2_counts[choice] = (q2_counts[choice] / q2_answers) * 100
+
+        q2_nws_bar_chart = BarChart(
+            values=[
+                q2_counts["Only used non-texting platforms to communicate"],
+                q2_counts["Moved group chats to WhatsApp or similar apps"],
+                q2_counts["Texted them less frequently"],
+                q2_counts["Excluded them from group chats"],
+                q2_counts["Removed them from group chats"],
+                q2_counts["Stopped texting them entirely"],
+                q2_counts["None of the above"]
+            ],
+            bar_names=[
+                "Only used non-texting platforms to communicate",
+                "Moved group chats to WhatsApp or similar apps",
+                "Texted them less frequently",
+                "Excluded them from group chats",
+                "Removed them from group chats",
+                "Stopped texting them entirely",
+                "None of the above",
+            ]
+        )
+
+        q2_surv_bar_chart = BarChart(
+            values=[
+                35,
+                30,
+                23,
+                21,
+                17,
+                15
+            ],
+            bar_names=[
+                "Only used non-texting platforms to communicate",
+                "Moved group chats to WhatsApp or similar apps",
+                "Texted them less frequently",
+                "Excluded them from group chats",
+                "Removed them from group chats",
+                "Stopped texting them entirely",
+            ]
+        )
+        #q3 (to android users), which of the following have happoned to you because of your Android phone?
+        q3_data = data["Have you ever switched to a third-party messaging app (WhatsApp, Discord, etc.) to accommodate non-iPhone users?"]
+        
+
+        #q4 (to android users), Have you ever considered switching to iPhone due to peer pressure
+        #q5 (to iphone users), have you ever switched to a third-party messaging app to accomodate non-ios users?
 
     #endregion
 
