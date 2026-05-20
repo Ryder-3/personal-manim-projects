@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 
+from matplotlib.pyplot import bar
+
 # Scenes in subfolders are not on sys.path; add repo root for local imports.
 for _parent in Path(__file__).resolve().parents:
     if (_parent / "mobjects").is_dir():
@@ -149,7 +151,7 @@ class MainScene(Scene):
         #keep this on the bottom for this entire section
         citation = Text("Source for outside data: https://allaboutcookies.org/apple-vs-android")
 
-        #q1 (to iphone users), do you think less of people who have Andriods
+        #region q1 (to iphone users), do you think less of people who have Andriods
         data_txt_1 = Text('The first question I asked iPhone users was "Do you judge people when they text you with green bubbles?"')
         q1_data = data["Do you judge people when they text you with green bubles?"]
 
@@ -171,12 +173,15 @@ class MainScene(Scene):
         q1_y = (q1_y/q1_answers) * 100
         q1_n = (q1_n/q1_answers) * 100
 
+        q1_y = round(q1_y, 2)
+        q1_n = round(q1_n, 2)
+
         #display        
         q1_nws_bar_chart = BarChart([q1_y, q1_n], bar_names=["Yes", "No"])
         q1_surv_bar_chart = BarChart([22, 78], bar_names=["Yes", "No"])
-        
+        #endregion
     
-        #q2 (to iphone users), which of the following have you done because someone you know has an android?
+        #region q2 (to iphone users), which of the following have you done because someone you know has an android?
         q2_data = data["Which of the following have you done because someone you know has an Android? (select all that apply)"]
         q2_counts: dict[str, float] = {}
         q2_answers = 0
@@ -191,6 +196,7 @@ class MainScene(Scene):
 
         for choice in q2_counts:
             q2_counts[choice] = (q2_counts[choice] / q2_answers) * 100
+            q2_counts[choice] = round(q2_counts[choice], 2)
 
         q2_nws_bar_chart = BarChart(
             values=[
@@ -231,12 +237,153 @@ class MainScene(Scene):
                 "Stopped texting them entirely",
             ]
         )
-        #q3 (to android users), which of the following have happoned to you because of your Android phone?
+
+        #Note that I gave a none of the above, the other survay didn't
+
+        #endregion
+
+        #region q3 (to iphone users), Have you ever switched to a third-party messaging app (WhatsApp, Discord, etc.) to accommodate non-iPhone users?
         q3_data = data["Have you ever switched to a third-party messaging app (WhatsApp, Discord, etc.) to accommodate non-iPhone users?"]
         
+        q3_y = 0
+        q3_n = 0
+        q3_a = 0
 
-        #q4 (to android users), Have you ever considered switching to iPhone due to peer pressure
-        #q5 (to iphone users), have you ever switched to a third-party messaging app to accomodate non-ios users?
+        for answer in q3_data:
+            if answer == "Yes":
+                q3_y += 1
+                q3_a += 1
+            elif answer == "No":
+                q3_n += 1
+                q3_a += 1
+
+        #convert to %
+        q3_y = (q3_y/q3_a) * 100
+        q3_n = (q3_n/q3_a) * 100
+
+        q3_y = round(q3_y, 2)
+        q3_n = round(q3_n, 2)
+
+        q3_nws_bar_chart = BarChart([q3_y, q3_n], bar_names=["Yes","No"])
+        q3_surv_bar_chart = BarChart([42, 58], bar_names=["Yes","No"])
+        #endregion
+
+        #region q4 (to android users) Which of the following have happened to you because you have an Android phone? (select all that apply)
+        q4_data = data["Which of the following have happened to you because you have an Android phone? (select all that apply)"]
+
+        q4_counts: dict[str, float] = {}
+        q4_answers = 0
+        for response in q4_data:
+            if not response.strip():
+                continue
+            q4_answers += 1
+            for choice in response.split(";"):
+                choice = choice.strip()
+                if choice:
+                    q4_counts[choice] = q4_counts.get(choice, 0) + 1
+
+        for choice in q4_counts:
+            q4_counts[choice] = (q4_counts[choice] / q4_answers) * 100
+            q4_counts[choice] = round(q4_counts[choice], 2)
+
+        q4_nws_bar_chart = BarChart(
+            values = [
+                q4_counts['Made fun of by iPhone users'],
+                q4_counts["Missed or misunderstood messages (due to compatibility issues)"],
+                q4_counts["Felt negatively judged"],
+                q4_counts["Asked a group to use an alternative messaging app"],
+                q4_counts["Felt embarrassed"],
+                q4_counts["Been excluded from a group chat"],
+                q4_counts["None of the above"],
+            ],
+            bar_names = [
+                "Made fun of by iPhone users",
+                "Missed or misunderstood messages (due to compatibility issues)",
+                "Felt negatively judged",
+                "Asked a group to use an alternative messaging app",
+                "Felt embarrassed",
+                "Been excluded from a group chat",
+                "None of the above",
+            ]
+        )
+
+        q4_surv_bar_chart = BarChart(
+            values = [
+                52,
+                38,
+                36,
+                33,
+                26,
+                24,
+            ],
+            bar_names = [
+                "Made fun of by iPhone users",
+                "Missed or misunderstood messages (due to compatibility issues)",
+                "Felt negatively judged",
+                "Asked a group to use an alternative messaging app",
+                "Felt embarrassed",
+                "Been excluded from a group chat",
+                "None of the above",
+            ]
+        )
+        #Note that I gave a none of the above, the other survay didn't  
+
+
+        #endregion
+
+        #region q5 (to android users), Have you ever considered switching to iPhone due to peer pressure
+        q5_data = data["Have you ever considered switching to iPhone due to peer pressure?"]
+
+        q5_y = 0
+        q5_n = 0
+        q5_a = 0
+
+        for answer in q5_data:
+            if answer == "Yes":
+                q5_y += 1
+                q5_a += 1
+            elif answer == "No":
+                q5_n += 1
+                q5_a += 1
+        
+        #convert to %
+        q5_y = (q5_y/q5_a) * 100
+        q5_n = (q5_n/q5_a) * 100
+
+        q5_y = round(q5_y, 2)
+        q5_n = round(q5_n, 2)
+
+        q5_nws_bar_chart = BarChart([q5_y, q5_n], bar_names=["Yes", "No"])
+        q5_surv_bar_chart = BarChart([30, 70], bar_names=["Yes","No"])
+
+        #endregion
+
+        #region q6 (to iphone users), have you ever switched to a third-party messaging app to accomodate non-ios users?
+        q6_data = data["Have you ever switched to a third-party messaging app (WhatsApp, Discord, etc.) to accommodate non-iPhone users?"]
+
+        q6_y = 0
+        q6_n = 0
+        q6_a = 0
+
+        for answer in q6_data:
+            if answer == "Yes":
+                q6_y += 1
+                q6_a += 1
+            elif answer == "No":
+                q6_n += 1
+                q6_a += 1
+        
+        #convert to %
+        q6_y = (q6_y/q6_a) * 100
+        q6_n = (q6_n/q6_a) * 100
+
+        q6_y = round(q6_y, 2)
+        q6_n = round(q6_n, 2)
+
+        q6_nws_bar_chart = BarChart([q5_y, q5_n], bar_names=["Yes", "No"])
+        q6_surv_bar_chart = BarChart([42, 58], bar_names=["Yes","No"])
+
+        #endregion
 
     #endregion
 
